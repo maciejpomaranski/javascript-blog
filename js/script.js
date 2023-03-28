@@ -51,8 +51,8 @@ const titleClickHandler = function(event){
 
   function generateTitleLinks(){
 
-    /*[DONE] remove contents of titleList */
-    const titleList = document.querySelector(optTitleSelector);
+    /*[in progress] remove contents of titleList */
+    const titleList = document.querySelectorAll(optTitleSelector);
     titleList.innerHTML = '';
     console.log('Contents of titleList removed');
 
