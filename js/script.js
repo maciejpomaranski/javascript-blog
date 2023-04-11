@@ -13,8 +13,15 @@ const optArticleSelector = '.post',
   optTagsListSelector = '.tags.list',
   optCloudClassCount = '5',
   optCloudClassPrefix = 'tag-size-',
-  optAuthorsListSelector  = '.authors.list';
-  
+  optAuthorsListSelector  = '.authors.list',
+  templates = {
+    articleLink: Handlebars.compile(document.querySelector('#template-article-link').innerHTML),
+    subjectLink: Handlebars.compile(document.querySelector('#template-tag-link').innerHTML),
+    authorLink: Handlebars.compile(document.querySelector('#template-author-link').innerHTML),
+    tagCloudLink: Handlebars.compile(document.querySelector('#template-tag-cloud-link').innerHTML),
+    
+    
+  };
 
 
 const titleClickHandler = function(event){
@@ -74,7 +81,9 @@ function generateTitleLinks(customSelector = ''){
     const articleTitle = article.querySelector(optTitleSelector).innerHTML;
   
     /* create HTML of the link */
-    const linkHTML = '<li><a href="#' + articleId + '"><span>' + articleTitle + '</span></a></li>';
+    //const linkHTML = '<li><a href="#' + articleId + '"><span>' + articleTitle + '</span></a></li>';
+    const linkHTMLData = {id: articleId, title: articleTitle};
+    const linkHTML = templates.articleLink(linkHTMLData); 
 
     /* insert link into titleList */
     //titleList.innerHTML = titleList.innerHTML + linkHTML;
@@ -144,9 +153,13 @@ function generateTags(){
     for (let tag of tagsArray){
 
       /* generate HTML of the link */
-      const linkHTML = '<li><a href="#tag-' + tag + '">' + tag + '</a></li>';
-
+      //const linkHTML = '<li><a href="#tag-' + tag + '">' + tag + '</a></li>';
+      const linkHTMLData = {tagName: tag};
+      const linkHTML = templates.subjectLink(linkHTMLData);
+      console.log(linkHTML);
+      
       /* add generated code to html variable */
+      
       tagHTML = tagHTML + ' ' + linkHTML;
 
       /* [NEW] check if this link is NOT already in allTags */
@@ -174,18 +187,27 @@ function generateTags(){
   console.log('tagsParams:', tagsParams);
 
   /* [NEW] create variable for all links HTML code */
-  let allTagsHTML = '';
+  const allTagsData = {tags: []};
+  //let allTagsHTML = '';
 
   /* [NEW] START LOOP: for each tag in allTags: */
   for(let tag in allTags){
   /* [NEW] generate code of a link and add it to allTagsHTML */
-    allTagsHTML += '<li><a class="' + calculateTagClass(allTags[tag], tagsParams) + '" href="#tag-' + tag + '">' + tag + ' (' + allTags[tag] + ')</a></li>';
+    
+    //allTagsHTML += '<li><a class="' + calculateTagClass(allTags[tag], tagsParams) + '" href="#tag-' + tag + '">' + tag + ' (' + allTags[tag] + ')</a></li>';
     //inaczej allTagsHTML += tagLinkHTML;
+    allTagsData.tags.push({
+      tag: tag,
+      count: allTags[tag],
+      className: calculateTagClass(allTags[tag], tagsParams)
+    });
+    console.log(allTagsData);
   }
   /* [NEW] END LOOP: for each tag in allTags: */
 
   /*[NEW] add HTML from allTagsHTML to tagList */
-  tagList.innerHTML = allTagsHTML;
+  //tagList.innerHTML = allTagsHTML;
+  tagList.innerHTML = templates.tagCloudLink(allTagsData);
 }
 
 generateTags();
@@ -232,7 +254,7 @@ function tagClickHandler(event){
 
 function addClickListenersToTags(){
   /* find all links to tags */
-  const links = document.querySelectorAll('.post .list a');
+  const links = document.querySelectorAll('.post .list a,.tags.list a');
 
   /* START LOOP: for each link */
   for(let link of links){
@@ -257,12 +279,17 @@ function generateAuthors(){
 
     /* get tags from data-author attribute */
     const author = article.getAttribute('data-author');
+    console.log(author);
 
     /*  generate HTML of the link */  
-    const authorHTML = 'by <a href="#' + author + '">' + author + '</a>';
-
+    //const authorHTML = 'by <a href="#' + author + '">' + author + '</a>';
+    const authorHTMLData = {authorName: author};
+    const authorHTML = templates.authorLink(authorHTMLData);
+    
     /* add generated code to html variable */
     authorWrapper.innerHTML = authorHTML;
+    console.log(authorWrapper);
+  
 
     /* [NEW] check if this link is NOT already in allTags */
     if(!allAuthors[author]) {
@@ -292,12 +319,13 @@ function authorClickHandler(event){
   event.preventDefault();
   const clickedElement = this;
   const href = clickedElement.getAttribute('href');
-  const author = href.replace('#','');
+  const author = href.replace('#author','');
   generateTitleLinks('[data-author="' + author + '"]');
 }
 
 function addClickListenersToAuthors(){
-  const links = document.querySelectorAll('.post .post-author a');
+  //const links = document.querySelectorAll('.post .post-author a');
+  const links = document.querySelectorAll('a[href^="#author"]');
   for(let link of links){
     link.addEventListener('click', authorClickHandler);
   }
